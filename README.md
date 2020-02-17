@@ -31,7 +31,7 @@ How to reproduce:
 
 
      App running at:
-     - Local:   http://localhost:8080/ 
+     - Local:   http://localhost:8080/
      - Network: unavailable
 
      Note that the development build is not optimized.
@@ -90,3 +90,25 @@ The inconsistent failure (success initially and failure on hot-reloads) isn't
 ideal either.
 
 It's worth noting that `yarn build` always seems to fail.
+
+# Workaround: disable eslint
+We can disable eslint with:
+```diff
+diff --git a/vue.config.js b/vue.config.js
+index 071e432..a4ff094 100644
+--- a/vue.config.js
++++ b/vue.config.js
+@@ -1,6 +1,7 @@
+ const WorkerPlugin = require('worker-plugin')
+ 
+ module.exports = {
++  lintOnSave: false,
+   chainWebpack: config => {
+     config.plugin('worker').use(WorkerPlugin)
+   },
+```
+
+It stops the eslint errors from showing up (because eslint is not running). You
+can make changes to the worker script and it will be rebuilt. Just refresh the
+page to reload the worker script, it doesn't seem to be hot-reloaded (not ideal
+but also not relevant to this issue).
