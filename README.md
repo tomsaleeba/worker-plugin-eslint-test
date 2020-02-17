@@ -112,3 +112,44 @@ It stops the eslint errors from showing up (because eslint is not running). You
 can make changes to the worker script and it will be rebuilt. Just refresh the
 page to reload the worker script, it doesn't seem to be hot-reloaded (not ideal
 but also not relevant to this issue).
+
+# Diving deeper
+If you apply this change to `node_modules/eslint-loader/index.js`:
+```diff
+--- index.js.bak	2020-02-17 18:07:11.092061688 +1030
++++ index.js	2020-02-17 18:07:56.208537585 +1030
+@@ -239,6 +239,10 @@
+     resourcePath = resourcePath.substr(cwd.length + 1);
+   }
+ 
++  if (resourcePath === 'src/worker.js') {
++    console.log(input)
++  }
++
+   // return early if cached
+   if (config.cache) {
+     var callback = webpack.async();
+```
+...then you'll be able to see what's getting linted. Here's a commented copy of
+the output:
+
+```
+# first time through
+// This is a module worker, so we can use imports (in the browser too!)
+import { makeEven } from './common'
+
+self.addEventListener('message', event => {
+  postMessage(makeEven(event.data))
+})
+
+# second time through
+// This is a module worker, so we can use imports (in the browser too!)
+import { makeEven } from './common';
+self.addEventListener('message', function (event) {
+  postMessage(makeEven(event.data));
+});
+```
+
+We can see our worker goes through the linter twice and on the second time we
+are linting something that's already been processed. If we can stop that linting
+of processed code, we'll be set.
