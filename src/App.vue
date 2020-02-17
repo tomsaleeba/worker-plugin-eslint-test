@@ -1,19 +1,31 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png" />
-    <HelloWorld msg="Welcome to Your Vue.js App" />
+    <div>Worker result = {{ workerResult }}</div>
+    <button @click="onTriggerWorker">Trigger worker</button>
   </div>
 </template>
 
 <script>
-import HelloWorld from "./components/HelloWorld.vue";
+const piWorker = new Worker('./worker.js', { type: 'module' })
 
 export default {
-  name: "App",
-  components: {
-    HelloWorld
-  }
-};
+  name: 'App',
+  data() {
+    return {
+      workerResult: null,
+    }
+  },
+  mounted() {
+    piWorker.onmessage = event => {
+      this.workerResult = event.data
+    }
+  },
+  methods: {
+    onTriggerWorker() {
+      piWorker.postMessage(42)
+    },
+  },
+}
 </script>
 
 <style>
