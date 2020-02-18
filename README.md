@@ -91,7 +91,7 @@ ideal either.
 
 It's worth noting that `yarn build` always seems to fail.
 
-# Workaround: disable eslint
+# Workaround: disable eslint completely
 We can disable eslint with:
 ```diff
 diff --git a/vue.config.js b/vue.config.js
@@ -112,6 +112,16 @@ It stops the eslint errors from showing up (because eslint is not running). You
 can make changes to the worker script and it will be rebuilt. Just refresh the
 page to reload the worker script, it doesn't seem to be hot-reloaded (not ideal
 but also not relevant to this issue).
+
+# Workaround: disable eslint for only our worker file
+By adding a comment at the top of our worker script, we can disable eslint for
+it:
+```javascript
+/* eslint-disable */
+```
+
+Obviously this isn't ideal because we want a well linted file but it will let
+you continue with development so you can come back to this later.
 
 # Diving deeper
 If you apply this change to `node_modules/eslint-loader/index.js`:
@@ -153,3 +163,8 @@ self.addEventListener('message', function (event) {
 We can see our worker goes through the linter twice and on the second time we
 are linting something that's already been processed. If we can stop that linting
 of processed code, we'll be set.
+
+I think the linter may be touching our worker script too. Occasionally my editor
+(vim) tells me that the worker script has been modified since last reading it
+and the only other thing running is the webpack dev server. It's hard to
+reproduce so I can't confirm if this is the case.
